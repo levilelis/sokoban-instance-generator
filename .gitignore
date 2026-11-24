@@ -1,0 +1,13 @@
+# Build artifacts
+*.o
+bin/
+
+# Generator output
+Results/
+
+# Blossom V is downloaded by `make` (its license forbids redistribution)
+Include/blossom5/
+
+# Editor / OS files
+*.vcxproj.user
+.DS_Store
