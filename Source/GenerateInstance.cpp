@@ -25,19 +25,28 @@ namespace ls
 	   best_state = hs.Run(root, instance, time, out_distance, out_instance, LIMIT_TIME_, heuristics_);
 
 
-	   // Print on the screen the value of MM, PDB1, IPDB2, IPDB3, IPDB4, MPDB2, MPDB3, MPDB4 of the last state found.
-	   std::cout << " mm " << heuristics_.GetMM(best_state, instance)
+	   // Values of MM and PDB2 need Blossom V; without it they are reported as NA.
+#ifdef USE_BLOSSOM
+	   const std::string mm_value = std::to_string(heuristics_.GetMM(best_state, instance));
+	   const std::string pdb2_value = std::to_string(heuristics_.GetPDB2(best_state, instance));
+#else
+	   const std::string mm_value = "NA";
+	   const std::string pdb2_value = "NA";
+#endif
+
+	   // Print on the screen the value of MM, PDB1, MPDB2, MPDB3, MPDB4 of the last state found.
+	   std::cout << " mm " << mm_value
 					<< " pdb1 " << heuristics_.GetPDB1(best_state, instance)
-					<< " mpdb2 " << heuristics_.GetPDB2(best_state, instance)
+					<< " mpdb2 " << pdb2_value
 					<< " mpdb3 " << heuristics_.GetPDB3_Random(best_state, instance)
 					<< " mpdb4 " << heuristics_.GetPDB4_Random(best_state, instance)
 					<< " time " << time.GetDuration()
 					<< std::endl;
 
-	   // Print on the files the value of MM, PDB1, IPDB2, IPDB3, IPDB4, MPDB2, MPDB3, MPDB4 of the last state found.
-	   out_distance << " mm " << heuristics_.GetMM(best_state, instance)
+	   // Print on the files the value of MM, PDB1, MPDB2, MPDB3, MPDB4 of the last state found.
+	   out_distance << " mm " << mm_value
           			<< " pdb1 " << heuristics_.GetPDB1(best_state, instance)
-					<< " mpdb2 " << heuristics_.GetPDB2(best_state, instance)
+					<< " mpdb2 " << pdb2_value
 					<< " mpdb3 " << heuristics_.GetPDB3_Random(best_state, instance)
 					<< " mpdb4 " << heuristics_.GetPDB4_Random(best_state, instance)
 					<< " time " << time.GetDuration()

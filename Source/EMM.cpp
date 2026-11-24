@@ -15,6 +15,10 @@ namespace ls
 
 	const int EMM::GetLowerbound(const std::vector<int> &state,	const Instance &instance)
 	{
+#ifndef USE_BLOSSOM
+		std::cerr << "Error: the minimum-matching (mm) heuristic requires Blossom V (build with `make BLOSSOM=1`)." << std::endl;
+		std::exit(1);
+#else
 		int number_objects = instance.SizeState();
 		int number_nodes = 2 * number_objects;
 
@@ -53,6 +57,7 @@ namespace ls
 		//	}
 		//	return goal_lowerbound;
 		return heuristic;
+#endif
 	}
 
 	// bool EMM::Initiate(const Instance &instance)

@@ -43,6 +43,10 @@ LowerboundMPDB::~LowerboundMPDB() {
 
 const int LowerboundMPDB::GetLowerboundNormalized(const Instance &instance, const std::vector<int> &state)
 {
+#ifndef USE_BLOSSOM
+    std::cerr << "Error: the PDB2 heuristic requires Blossom V (build with `make BLOSSOM=1`)." << std::endl;
+    std::exit(1);
+#else
     unsigned short number_nodes = instance.NumberObjects();
     unsigned short number_edges = number_nodes * (number_nodes - 1)/2;
 
@@ -107,6 +111,7 @@ const int LowerboundMPDB::GetLowerboundNormalized(const Instance &instance, cons
     delete matching;
 
     return lower_bound;
+#endif
 }
 
 const int LowerboundMPDB::GetLowerboundGreedyRandomized(const Instance &instance, const std::vector<int> &state)

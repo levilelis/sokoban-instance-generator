@@ -52,7 +52,12 @@
 #include <chrono>
 #endif
 
+// Blossom V (minimum-cost perfect matching) is optional. It is needed only for
+// the PDB2 heuristic and the minimum-matching (mm) statistic. Build with
+// `make BLOSSOM=1` to enable it.
+#ifdef USE_BLOSSOM
 #include "PerfectMatching.h"
+#endif
 
 #if defined(__linux__) || defined(__lnx__)
 #include <sys/stat.h>

@@ -64,6 +64,30 @@ ls::TypeHeuristic HeuristicType(string heuristic)
 		return type_heuristic = ls::TypeHeuristic::wpdb3r_oc3r_pdb3r;
 	else if (heuristic == "wpdb4r_4ocr_pdb4r") // [w(PDB4r),PDB4r-PDB3r,PDB4r]
 		return type_heuristic = ls::TypeHeuristic::wpdb4r_oc4r_pdb4r;
+
+	std::cerr << "Error: unknown ORDERING '" << heuristic << "'. See README.md for the list of orderings." << std::endl;
+	std::exit(1);
+}
+
+// Orderings that use PDB2 (directly, or through 2C/3C conflicts) need Blossom V.
+bool RequiresBlossom(ls::TypeHeuristic type)
+{
+	switch (type)
+	{
+		case ls::TypeHeuristic::pdb2:
+		case ls::TypeHeuristic::pdb2_oc2:
+		case ls::TypeHeuristic::pdb3r_oc3r:
+		case ls::TypeHeuristic::oc2_pdb2:
+		case ls::TypeHeuristic::oc3r_pdb3r:
+		case ls::TypeHeuristic::wpdb2_pdb2:
+		case ls::TypeHeuristic::wpdb2_pdb2_oc2:
+		case ls::TypeHeuristic::wpdb3r_pdb3r_oc3r:
+		case ls::TypeHeuristic::wpdb2_oc2_pdb2:
+		case ls::TypeHeuristic::wpdb3r_oc3r_pdb3r:
+			return true;
+		default:
+			return false;
+	}
 }
 
 void CaseRunInstanceMethod(char* argv[])
@@ -78,6 +102,14 @@ void CaseRunInstanceMethod(char* argv[])
    // Read heuristic
    std::string heuristic = argv[2];
    ls::TypeHeuristic type_heuristic = HeuristicType(heuristic);
+#ifndef USE_BLOSSOM
+   if (RequiresBlossom(type_heuristic))
+   {
+      std::cerr << "Error: ORDERING '" << heuristic << "' uses PDB2, which requires Blossom V." << std::endl
+                << "Rebuild with `make BLOSSOM=1` (see README.md), or use an ordering based on PDB1, PDB3, or PDB4." << std::endl;
+      std::exit(1);
+   }
+#endif
 
    //Read time
    std::string TIME = argv[3];
@@ -129,109 +161,16 @@ void CaseRunInstanceMethod(char* argv[])
 }
 
 
-void CaseRunAll()
-{
-   //Read files.
-   std::string file = "GoalxSokoban";
-   ls::Reader reader("GoalxSokoban");
-
-   //Read heuristic test.
-   std::string algorithm = "GBFS";
-   ls::TypeTest type_test = ls::TypeTest::GBFS;
-
-   //Read time.
-   std::string TIME = "10";
-   const int LIMIT_TIME = std::stoi(TIME);
-
-   // Read heuristic.
-   ls::TypeHeuristic type_heuristic;
-   std::string heuristic = "4c_pdb4";
-
-   type_heuristic = HeuristicType(heuristic);
-
-   //Read Set Instance used.
-   std::string set_instance = "Local";
-
-   const bool pdb4_random = true;
-
-   std::string run_time = "01";
-
-   // Creation of the files and folders to store the results
-   std::string base_folder = "Results/" + run_time + "/";
-   std::string heuristic_folder = base_folder + "GBFS-" + heuristic + "-" + TIME;
-   mkdir(base_folder.c_str(), 0777);
-   mkdir(heuristic_folder.c_str(), 0777);
-
-   std::string folder_results_distances = heuristic_folder + "/Distances/";
-   std::string folder_results_instances = heuristic_folder + "/Instances/";
-   mkdir(folder_results_distances.c_str(), 0777);
-   mkdir(folder_results_instances.c_str(), 0777);
-
-   std::ofstream out_distances(folder_results_distances + file + "-GBFS-" + heuristic + ".txt");
-   std::ofstream out_instances(folder_results_instances + file + ".map");
-
-   //Put the number of instance on the file of the result
-   out_instances << "!" << file[9] << file[10] << std::endl;
-   out_distances << file[9] << file[10];
-
-   srand(time(NULL));
-
-   //Run tests.
-   for (int i = 0; i < 90; i++)
-   {
-	   // Pre-processing the instance.
-	   ls::Instance instance;
-	   std::vector<std::string> instace_file(reader.Instace(i));
-	   std::vector<int> root = instance.ProcessInstance(instace_file);
-
-	   //Generate the instance.
-	   ls::GenerateInstance test_case(instance, LIMIT_TIME, type_heuristic);
-	   std::vector<int> results = test_case.RunHS(file, root, instance, type_heuristic, type_test, out_distances, out_instances);
-   }
-
-   // Close the files of the results
-   out_distances.close();
-   out_instances.close();
-}
-
-void HeuristicInitialState()
-{
-   ls::Reader reader("xSokoban");
-   for (int i = 0; i < reader.Size(); i++)
-   //for (int i = 36; i <= 36; i++)
-   {
-      std::cout << i + 1;
-
-      //Pre-Processing the instance
-      ls::Instance instance;
-      std::vector<std::string> instace_file(reader.Instace(i));
-
-      std::vector<int> root = instance.ProcessInstance(instace_file);
-
-      /*MPDB* mpdb = new MPDB(instance, 4, 60);
-      mpdb->Initiate(instance);
-      mpdb->Solve(instance, 60);
-      delete mpdb;*/
-
-      LowerboundMPDB* mpdb = new LowerboundMPDB(instance, 4, 60);
-      mpdb->Initiate(instance, 60);
-      //Show::State(root, instance);
-
-      std::cout << " " << mpdb->GetLowerbound(root, instance) << std::endl;
-      delete mpdb;
-   }
-}
-
-
 int main(int argc, char* argv[])
 {
-   if (argc > 1)
+   if (argc != 5)
    {
-      CaseRunInstanceMethod(argv);
+      std::cerr << "Usage: " << argv[0] << " <NAME> <ORDERING> <TIME> <RUN>" << std::endl
+                << "Example: " << argv[0] << " instance_01 wpdb4r_4ocr_pdb4r 60 01" << std::endl
+                << "See README.md for details." << std::endl;
+      return 1;
    }
-   else
-   {
-      //HeuristicInitialState();
-      CaseRunAll();
-   }
+
+   CaseRunInstanceMethod(argv);
+   return 0;
 }
