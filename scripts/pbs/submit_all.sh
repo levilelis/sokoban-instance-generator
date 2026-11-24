@@ -4,7 +4,7 @@
 #PBS -l nodes=1:ppn=1,mem=1gb,walltime=1100:00:00
 #PBS -q roteamento
 
-cd /home/es91673/dados/instance_generation/DissertacaoFinal/Local_Search_aaai-novelty_002_18.01/
+cd "$(dirname "$0")/../.."   # submit from the repository root so PBS_O_WORKDIR points there
 
 # instance to be tested
 INSTANCES='instance_01.map
@@ -137,15 +137,15 @@ do
 		do
 			name2=`basename ${i} .map`
 
-				(qsub -v NAME=${name2},HEUR=${heur},TIME=${LIMIT_TIME},RUN=${times} Sokoban.sh) &    
+				(qsub -v NAME=${name2},HEUR=${heur},TIME=${LIMIT_TIME},RUN=${times} scripts/pbs/job.sh) &    
 				#(qsub -l nodes=1:STANDARD:ppn=1,mem=9gb -v NAME=${name2},ALG=${ALGORITHM},HEUR=${heur},TIME=${t} Sokoban.sh) &     
 		
-				q=$(qselect -u es91673 | wc -l)
+				q=$(qselect -u "$USER" | wc -l)
 				while [ "$q" -gt "30" ]
 				do
 					echo "$q"
 					sleep 30
-					q=$(qselect -u es91673 | wc -l)
+					q=$(qselect -u "$USER" | wc -l)
 
 				done	
 			

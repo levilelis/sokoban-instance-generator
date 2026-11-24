@@ -4,7 +4,7 @@
 #PBS -l nodes=1:STANDARD:ppn=1,mem=9gb,walltime=2:00:00
 #PBS -q qtime
 
-cd /home/damaris/git/IJCAI-19/GBFS/Local_Search_IJCAI_18.01.19_Código/
+cd "${PBS_O_WORKDIR:-.}"   # repository root (see submit_all.sh)
 
 module load boost/1.58.0
 module load gcc/4.8.3
